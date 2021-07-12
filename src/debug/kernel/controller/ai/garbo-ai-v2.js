@@ -146,6 +146,8 @@ function QSearch(alpha, beta, ply) {
     if (realEval > alpha)
         alpha = realEval;
 
+//  if (ply < -5) return realEval;
+
     var moves = new Array();
     var moveScores = new Array();
     var wasInCheck = Dagaz.AI.g_inCheck;
@@ -361,7 +363,7 @@ Dagaz.AI.isNoZugzwang = function() {
 }
 
 function AllCutNode(ply, depth, beta, allowNull) {
-    if (depth > 100) return 0;
+//  if (depth > 100) return 0;
 
     if (ply <= 0) {
         return QSearch(beta - 1, beta, 0);
@@ -540,7 +542,7 @@ function AlphaBeta(ply, depth, alpha, beta) {
     g_nodeCount++;
 
     if (depth > 0 && IsRepDraw()) return 0;
-    if (depth > 100) return 0;
+//  if (depth > 100) return 0;
 
     // Mate distance pruning
     var oldAlpha = alpha;
@@ -711,6 +713,10 @@ Dagaz.AI.InitializePieceList = function() {
 
 Dagaz.AI.GenerateDropMoves = function(moves, force) {}
 
+function debugPlyCallback(bestMove, value, time, ply) {
+    console.log(Dagaz.AI.FormatMove(bestMove) + ', v = ' + value + ', t = ' + time + ', ply = ' + ply);
+}
+
 Ai.prototype.setContext = function(ctx, board) {
   if (this.parent) {
       this.parent.setContext(ctx, board);
@@ -783,7 +789,7 @@ Ai.prototype.getMove = function(ctx) {
       setTimeout(function () {
             var s = Dagaz.AI.InitializeFromFen(fen);
             if (s == '') {
-                Search(garbo, 10, null);
+                Search(garbo, 10, debugPlyCallback);
             } else {
                 console.log(s);
             }
