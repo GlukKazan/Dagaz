@@ -20,6 +20,10 @@
 <img id="BlackBia" style="display:none" src="images/bpawn.png">
 
 <table style="margin:auto; font-family:sans-serif; font-size:14px" id="Table">
+<tr><td><a href="javascript:Dagaz.Controller.undo()" style="display:none" id="undo"><img src="../../images/undo.png"/></a>
+<a href="javascript:Dagaz.Controller.newGame()">New Game</a>
+<a href="javascript:Dagaz.Controller.sound()" id="sound">no Sound</a>
+<a href="javascript:Dagaz.Controller.redo()" style="display:none" id="redo"><img src="../../images/redo.png"/></a></td></tr>
 <tr style="height:404px; vertical-align:top">
 <td id="CanvasCell" style="width:404px">
 <canvas id="Canvas" width="404" height="404" style="cursor:default">Broken canvas...</canvas>
@@ -46,9 +50,15 @@
 <script src="http://underscorejs.ru/underscore-min.js"></script>
 <script src="../../kernel/dagaz.js"></script>
 <script src="../../kernel/model/zrf-model.js"></script>
-<script src="../../kernel/model/zobrist.js"></script>
+<script src="../../kernel/model/zobrist-v2.js"></script>
 <script src="../../kernel/view/2d/2d-view-v2.js"></script>
 <script src="../../kernel/controller/utils/move-list-v2.js"></script>
+<script src="../../kernel/controller/utils/session-manager.js"></script>
+<script src="../../kernel/controller/utils/sound-manager-v2.js"></script>
+<script src="../../kernel/controller/ai/random-ai.js"></script>
+<script src="../../kernel/controller/ai/garbo-ai-v2.js"></script>
+<script src="makruk-setup.js"></script>
+<script src="makruk-ai.js"></script>
 <script src="makruk-invariant.js"></script>
 <script src="makruk.js"></script>
 <script src="../../kernel/controller/app-v2.js"></script>
