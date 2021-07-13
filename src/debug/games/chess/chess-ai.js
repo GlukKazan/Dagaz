@@ -423,8 +423,8 @@ Dagaz.AI.ResetGame = function() {
   }
     
   // Initialize the vector delta table    
-   for (var row = 0; row < 0x80; row += 0x10) {
-        for (var col = 0; col < 0x8; col++) {
+  for (var row = 0; row < (Dagaz.Model.HEIGHT << 4); row += 0x10) {
+      for (var col = 0; col < Dagaz.Model.WIDTH; col++) {
            var square = row | col;
             
            // Pawn moves
@@ -990,10 +990,9 @@ function IsSquareAttackableFrom(target, from){
 function IsSquareAttackable(target, color) {
 	// Attackable by pawns?
 	var inc = color ? -16 : 16;
-	var pawn = (color ? Dagaz.AI.colorWhite : Dagaz.AI.colorBlack) | 1;
+	var pawn = (color ? Dagaz.AI.colorWhite : Dagaz.AI.colorBlack) | piecePawn;
 	if (Dagaz.AI.g_board[target - (inc - 1)] == pawn) return true;
 	if (Dagaz.AI.g_board[target - (inc + 1)] == pawn) return true;
-	
 	// Attackable by pieces?
 	for (var i = pieceKnight; i <= pieceKing; i++) {
         var index = (color | i) << Dagaz.AI.COUNTER_SIZE;
@@ -1226,7 +1225,7 @@ Dagaz.AI.GenerateCaptureMoves = function(moveStack) {
 function MovePawnTo(moveStack, start, square) {
     var row = square & 0xF0;
     var delta = (8 - Dagaz.Model.HEIGHT) << 4;
-    if ((row == (0x90 - delta) || (row == 0x20))) {
+    if (((row == (0x90 - delta)) || (row == 0x20))) {
         if (Dagaz.AI.g_flags & moveflagPromoteQueen) {
             moveStack[moveStack.length] = GenerateMove(start, square, moveflagPromotion | moveflagPromoteQueen);
         }
@@ -1260,7 +1259,7 @@ function GeneratePawnMoves(moveStack, from) {
                  moveStack[moveStack.length] = GenerateMove(from, to);
             }				
 	}
-   }
+    }
 }
 
 Dagaz.AI.See = function(move) {
