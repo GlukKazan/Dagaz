@@ -123,7 +123,23 @@ function Mobility(color) {
     var enemy = color == Dagaz.AI.colorWhite ? Dagaz.AI.colorBlack : Dagaz.AI.colorWhite
     var mobUnit = color == Dagaz.AI.colorWhite ? g_mobUnit[0] : g_mobUnit[1];
 
-    // TODO: Bishop mobility, Queen mobility
+    // Bishop mobility
+    mob = -4;
+    pieceIdx = (color | pieceBishop) << Dagaz.AI.COUNTER_SIZE;
+    from = Dagaz.AI.g_pieceList[pieceIdx++];
+    while (from != 0) {
+        mob += mobUnit[Dagaz.AI.g_board[from - 17]];
+        mob += mobUnit[Dagaz.AI.g_board[from - 15]];
+        mob += mobUnit[Dagaz.AI.g_board[from + 17]];
+        mob += mobUnit[Dagaz.AI.g_board[from + 15]];
+        if (color == Dagaz.AI.colorWhite) {
+            mob += mobUnit[Dagaz.AI.g_board[from - 16]];
+        } else {
+            mob += mobUnit[Dagaz.AI.g_board[from + 16]];
+        }
+        from = Dagaz.AI.g_pieceList[pieceIdx++];
+    }
+    result += 44 * mob;
 
     // Knight mobility
     mob = -3;
@@ -154,6 +170,19 @@ function Mobility(color) {
         from = Dagaz.AI.g_pieceList[pieceIdx++];
     }
     result += 25 * mob;
+
+    // Queen mobility
+    mob = -4;
+    pieceIdx = (color | pieceQueen) << Dagaz.AI.COUNTER_SIZE;
+    from = Dagaz.AI.g_pieceList[pieceIdx++];
+    while (from != 0) {
+        mob += mobUnit[Dagaz.AI.g_board[from - 17]];
+        mob += mobUnit[Dagaz.AI.g_board[from - 15]];
+        mob += mobUnit[Dagaz.AI.g_board[from + 17]];
+        mob += mobUnit[Dagaz.AI.g_board[from + 15]];
+        from = Dagaz.AI.g_pieceList[pieceIdx++];
+    }
+    result += 44 * mob;
 
     return result;
 }
@@ -298,7 +327,11 @@ Dagaz.AI.ResetGame = function() {
            index = square - (square + 15) + 128;
            g_vectorDelta[index].pieceMask[0] |= (1 << piecePawn);
 
-           // TODO: Bishop moves
+           // Bishop moves
+           index = square - (square - 16) + 128;
+           g_vectorDelta[index].pieceMask[Dagaz.AI.colorWhite >> Dagaz.AI.TYPE_SIZE] |= (1 << pieceBishop);
+           index = square - (square + 16) + 128;
+           g_vectorDelta[index].pieceMask[0] |= (1 << pieceBishop);
 
            for (var i = pieceBishop; i <= pieceFull; i++) {
                 for (var dir = 0; dir < pieceDeltas[i].length; dir++) {
@@ -762,7 +795,21 @@ Dagaz.AI.GenerateAllMoves = function(moveStack) {
 	from = Dagaz.AI.g_pieceList[pieceIdx++];
     }
 
-    // TODO: Bishop quiet moves
+    // Bishop quiet moves
+    pieceIdx = (Dagaz.AI.g_toMove | pieceBishop) << Dagaz.AI.COUNTER_SIZE;
+    from = Dagaz.AI.g_pieceList[pieceIdx++];
+    while (from != 0) {
+        if (Dagaz.AI.g_toMove == Dagaz.AI.colorWhite) {
+            to = from - 16; if (Dagaz.AI.g_board[to] == 0) moveStack[moveStack.length] = GenerateMove(from, to);
+        } else {
+            to = from + 16; if (Dagaz.AI.g_board[to] == 0) moveStack[moveStack.length] = GenerateMove(from, to);
+        }
+	to = from + 15; if (Dagaz.AI.g_board[to] == 0) moveStack[moveStack.length] = GenerateMove(from, to);
+	to = from + 17; if (Dagaz.AI.g_board[to] == 0) moveStack[moveStack.length] = GenerateMove(from, to);
+	to = from - 15; if (Dagaz.AI.g_board[to] == 0) moveStack[moveStack.length] = GenerateMove(from, to);
+	to = from - 17; if (Dagaz.AI.g_board[to] == 0) moveStack[moveStack.length] = GenerateMove(from, to);
+	from = Dagaz.AI.g_pieceList[pieceIdx++];
+    }
 
     // Rook quiet moves
     pieceIdx = (Dagaz.AI.g_toMove | pieceRook) << Dagaz.AI.COUNTER_SIZE;
@@ -775,7 +822,16 @@ Dagaz.AI.GenerateAllMoves = function(moveStack) {
 	from = Dagaz.AI.g_pieceList[pieceIdx++];
     }
 	
-    // TODO: Queen quiet moves
+    // Queen quiet moves
+    pieceIdx = (Dagaz.AI.g_toMove | pieceQueen) << Dagaz.AI.COUNTER_SIZE;
+    from = Dagaz.AI.g_pieceList[pieceIdx++];
+    while (from != 0) {
+	to = from + 15; if (Dagaz.AI.g_board[to] == 0) moveStack[moveStack.length] = GenerateMove(from, to);
+	to = from + 17; if (Dagaz.AI.g_board[to] == 0) moveStack[moveStack.length] = GenerateMove(from, to);
+	to = from - 15; if (Dagaz.AI.g_board[to] == 0) moveStack[moveStack.length] = GenerateMove(from, to);
+	to = from - 17; if (Dagaz.AI.g_board[to] == 0) moveStack[moveStack.length] = GenerateMove(from, to);
+	from = Dagaz.AI.g_pieceList[pieceIdx++];
+    }
 
     // King quiet moves
     {
@@ -827,7 +883,21 @@ Dagaz.AI.GenerateCaptureMoves = function(moveStack) {
 	from = Dagaz.AI.g_pieceList[pieceIdx++];
     }
 	
-    // TODO: Bishop captures
+    // Bishop captures
+    pieceIdx = (Dagaz.AI.g_toMove | pieceBishop) << Dagaz.AI.COUNTER_SIZE;
+    from = Dagaz.AI.g_pieceList[pieceIdx++];
+    while (from != 0) {
+        if (Dagaz.AI.g_toMove == Dagaz.AI.colorWhite) {
+            to = from - 16; if (Dagaz.AI.g_board[to] & enemy) moveStack[moveStack.length] = GenerateMove(from, to);
+        } else {
+            to = from + 16; if (Dagaz.AI.g_board[to] & enemy) moveStack[moveStack.length] = GenerateMove(from, to);
+        }
+	to = from + 15; if (Dagaz.AI.g_board[to] & enemy) moveStack[moveStack.length] = GenerateMove(from, to);
+	to = from + 17; if (Dagaz.AI.g_board[to] & enemy) moveStack[moveStack.length] = GenerateMove(from, to);
+	to = from - 15; if (Dagaz.AI.g_board[to] & enemy) moveStack[moveStack.length] = GenerateMove(from, to);
+	to = from - 17; if (Dagaz.AI.g_board[to] & enemy) moveStack[moveStack.length] = GenerateMove(from, to);
+	from = Dagaz.AI.g_pieceList[pieceIdx++];
+    }
 	
     // Rook captures
     pieceIdx = (Dagaz.AI.g_toMove | pieceRook) << Dagaz.AI.COUNTER_SIZE;
@@ -840,7 +910,16 @@ Dagaz.AI.GenerateCaptureMoves = function(moveStack) {
 	from = Dagaz.AI.g_pieceList[pieceIdx++];
     }
 	
-    // TODO: Queen captures
+    // Queen captures
+    pieceIdx = (Dagaz.AI.g_toMove | pieceQueen) << Dagaz.AI.COUNTER_SIZE;
+    from = Dagaz.AI.g_pieceList[pieceIdx++];
+    while (from != 0) {
+	to = from + 15; if (Dagaz.AI.g_board[to] & enemy) moveStack[moveStack.length] = GenerateMove(from, to);
+	to = from + 17; if (Dagaz.AI.g_board[to] & enemy) moveStack[moveStack.length] = GenerateMove(from, to);
+	to = from - 15; if (Dagaz.AI.g_board[to] & enemy) moveStack[moveStack.length] = GenerateMove(from, to);
+	to = from - 17; if (Dagaz.AI.g_board[to] & enemy) moveStack[moveStack.length] = GenerateMove(from, to);
+	from = Dagaz.AI.g_pieceList[pieceIdx++];
+    }
 	
     // King captures
     {
@@ -861,8 +940,7 @@ function MovePawnTo(moveStack, start, square) {
     var row = square & 0xF0;
     if (((row == 0x70) || (row == 0x40))) {
         moveStack[moveStack.length] = GenerateMove(start, square, moveflagPromotion);
-    }
-    else {
+    } else {
         moveStack[moveStack.length] = GenerateMove(start, square, 0);
     }
 }
@@ -909,13 +987,13 @@ Dagaz.AI.See = function(move) {
 
     var themAttacks = new Array();
 
-    // TODO: pieceQueen, pieceBishop
-
     // Knight attacks 
     // If any opponent knights can capture back, and the deficit we have to make up is greater than the knights value, 
     // it's not worth it.  We can capture on this square again, and the opponent doesn't have to capture back. 
     var captureDeficit = fromValue - toValue;
-    SeeAddKnightAttacks(to, them, themAttacks);
+    SeeAddKnightAttacks(to, them, themAttacks, pieceQueen);
+    SeeAddKnightAttacks(to, them, themAttacks, pieceBishop);
+    SeeAddKnightAttacks(to, them, themAttacks, pieceKnight);
     if (themAttacks.length != 0 && captureDeficit > g_seeValues[pieceKnight]) {
         Dagaz.AI.g_board[from] = fromPiece;
         return false;
@@ -923,12 +1001,10 @@ Dagaz.AI.See = function(move) {
 
     // Slider attacks
     Dagaz.AI.g_board[from] = 0;
-    for (var pieceType = pieceRook; pieceType <= pieceRook; pieceType++) {
-        if (SeeAddSliderAttacks(to, them, themAttacks, pieceType)) {
-            if (captureDeficit > g_seeValues[pieceType]) {
-                Dagaz.AI.g_board[from] = fromPiece;
-                return false;
-            }
+    if (SeeAddSliderAttacks(to, them, themAttacks, pieceRook)) {
+        if (captureDeficit > g_seeValues[pieceRook]) {
+            Dagaz.AI.g_board[from] = fromPiece;
+            return false;
         }
     }
 
@@ -947,11 +1023,11 @@ Dagaz.AI.See = function(move) {
 
     // Our attacks
     var usAttacks = new Array();
-    SeeAddKnightAttacks(to, us, usAttacks);
-    for (var pieceType = pieceBishop; pieceType <= pieceKing; pieceType++) {
-        if (pieceType == pieceKnight) continue;
-        SeeAddSliderAttacks(to, us, usAttacks, pieceType);
-    }
+    SeeAddKnightAttacks(to, us, usAttacks, pieceQueen);
+    SeeAddKnightAttacks(to, us, usAttacks, pieceBishop);
+    SeeAddKnightAttacks(to, us, usAttacks, pieceKnight);
+    SeeAddSliderAttacks(to, us, usAttacks, pieceRook);
+    SeeAddSliderAttacks(to, us, usAttacks, pieceKing);
 
     Dagaz.AI.g_board[from] = fromPiece;
 
@@ -1046,8 +1122,8 @@ function SeeAddXrayAttack(target, square, us, usAttacks, themAttacks) {
 }
 
 // target = attacking square, us = color of knights to look for, attacks = array to add squares to
-function SeeAddKnightAttacks(target, us, attacks) {
-    var pieceIdx = (us | pieceKnight) << Dagaz.AI.COUNTER_SIZE;
+function SeeAddKnightAttacks(target, us, attacks, pieceType) {
+    var pieceIdx = (us | pieceType) << Dagaz.AI.COUNTER_SIZE;
     var attackerSq = Dagaz.AI.g_pieceList[pieceIdx++];
     while (attackerSq != 0) {
         if (IsSquareOnPieceLine(target, attackerSq)) {

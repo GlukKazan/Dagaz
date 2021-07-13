@@ -118,7 +118,6 @@
   - Mini XiangQi
   - Passive Chess
   - Chaturanga
-  - Makruk
   - Sittuyin
   - Short Assize
   - Hiashatar

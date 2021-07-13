@@ -146,7 +146,7 @@ function QSearch(alpha, beta, ply) {
     if (realEval > alpha)
         alpha = realEval;
 
-//  if (ply < -5) return realEval;
+    if (ply < -20) return realEval;
 
     var moves = new Array();
     var moveScores = new Array();
