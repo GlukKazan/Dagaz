@@ -178,7 +178,7 @@ Dagaz.Model.setup = function(board, init) {
       if (rs) {
           Dagaz.Model.setReserve(design, board, rs);
       }
-      var g = getGlobal();
+      var g = getGlobal(init);
       if (g) {
           Dagaz.Model.setGlobal(design, board, g);
       }

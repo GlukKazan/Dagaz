@@ -28,7 +28,6 @@ Dagaz.Model.BuildDesign = function(design) {
     design.checkVersion("show-hints", "false");
     design.checkVersion("show-drops", "true");
     design.checkVersion("show-captures", "false");
-    design.checkVersion("advisor-wait", "5");
     design.checkVersion("chess-invariant", "true");
 
     design.addDirection("w");

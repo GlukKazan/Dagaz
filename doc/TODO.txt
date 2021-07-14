@@ -18,6 +18,15 @@
       - Неверно заполнялись g_vectorDelta
   - Short Assize
     - Сдвоенная фигура
+    - Фаза расстановки (поддержка резервов в setup-модуле)
+    - Нет рокировок и взятия на проходе
+    - Отключить advisor
+    - Перенести в DagazServer
+  - Sittuyin
+    - На основе Makruk
+    - Изменены линии и правила превращения (не больше одного ферзя на доске)
+    - Превращение "на месте"
+    - Поддержка резерва на стадии расстановки как в Short Assize
   - Mini XiangQi
     - Дворец
     - Пушки
@@ -36,6 +45,21 @@
     - Избавиться от вызова Dagaz.AI.callback в app-v5 при получении хода 
     - оставить для Advisor-а
 
+- Sahkku
+  - prototype
+    - https://skyruk.livejournal.com/288965.html
+- Nyout
+  - prototype
+    - https://skyruk.livejournal.com/216114.html
+
+- L-game
+  - prototype
+
+- Sovereign Chess
+  - Bug: Исчез чёрный король при заверешении игры (3316)
+  - Если белый вледеет синим, то синим фигурам РАЗРЕШЕНО занимать белое поле (sovereign_01)
+  - Если цветная фигура даёт шах, одним из способов защиты является бой фигуры контролирующей цвет (sovereign_02)
+
 - Doubutsu Shogi
   - garbo-ai
     - ?turn=1;&setup=1k1/rb1/1BR/1K1-100100
@@ -44,27 +68,17 @@
     - После первого хода возвращает bestMove == 0
       - Когда есть только тихие ходы
 
-- Checkers
-  - Посмотреть сообщение в FB от Байгужакова
-
 - Habr
   - Рисунок карты
   - Фрагмент про карту из "Охоты на Снарка"
 
 - Shogi
   - garbo-ai
-    - Отделить общую часть от кастомизируемой под игру
-      - Все настройки вынести в константы
     - В качестве резерва использовать край g_board с установленным флагом 0x80 (14 счётчиков)
       - Упростится кодирование хода (поле from-счётчик, флаги для превращений)
       - Исправить проверки корретности ходов
     - Расширить тип фигуры до 4 бит, сдвинуть флаги цвета (14 с учётом превращений)
     - Расширить счётчик фигур на доске до 6 бит (18 пешек двух игроков)
-
-- Sovereign Chess
-  - Bug: Исчез чёрный король при заверешении игры (3316)
-  - Если белый вледеет синим, то синим фигурам РАЗРЕШЕНО занимать белое поле (sovereign_01)
-  - Если цветная фигура даёт шах, одним из способов защиты является бой фигуры контролирующей цвет (sovereign_02)
 
 - Turnover
   - Проверить корректность ходов (1320)
@@ -82,9 +96,6 @@
     - Постановка камня фиксируется вторым нажатием (при первом, перемещающийся полупрозрачный камень)
     - Экранная лупа
 
-- L-game
-  - prototype
-
 - MakYek
   - https://en.wikipedia.org/wiki/Mak-yek
 
@@ -99,10 +110,6 @@
     - Ход предложенный адвизором (и ход бота) не фиксируется в dagaz.session
   - Silverman's Chess
     - session persistense откатывает последний ход чёрных при переключении
-
-- Sahkku
-  - prototype
-    - https://skyruk.livejournal.com/288965.html
 
 - garbo-ai
   - MiniShogi
@@ -119,7 +126,6 @@
   - Passive Chess
   - Chaturanga
   - Sittuyin
-  - Short Assize
   - Hiashatar
   - Balbo's Game
   - Platform Chess
@@ -148,9 +154,6 @@
 
 - Буси Сёги
   - https://ru.wikipedia.org/wiki/%D0%91%D1%83%D1%81%D0%B8_%D1%81%D1%91%D0%B3%D0%B8
-
-- Jungle
-  - https://brainking.com/ru/GameRules?tp=108
 
 - DagazServer MySQL
   - Traditional Games
@@ -208,9 +211,6 @@
     - Sovereign Chess
       - Партия не воспроизводится (3002)
   - Dices
-    - Nyout
-      - prototype
-        - https://skyruk.livejournal.com/216114.html
     - Tablan
   - Tournaments
     - Platform Chess
@@ -324,10 +324,6 @@
     - https://gofederation.ru/pages/277294472
   - Контроль времени
     - https://ru.wikipedia.org/wiki/Контроль_времени
-
-- Russian Checkers
-  - Бой дамкой (исправлено в Dagaz 3092)
-    - ?setup=+6;1:1;0:2;+14;0:1;;0:2;;0:2;+9;0:1;0:2;+2;0:1;+5;0:1;+5;0:1;+4;&turn=0
 
 - Column Checkers
   - AI: forced-ai зависает (MAX_FORCED_FACTOR = 2)
