@@ -20,6 +20,7 @@ var pieceRook             = 0x05;
 var pieceQueen            = 0x06;
 var pieceKing             = 0x07;
 
+var moveflagSplit         = 0x08 << 16;
 var moveflagPromotion     = 0x10 << 16;
 var moveflagPromoteKnight = 0x20 << 16;
 var moveflagPromoteQueen  = 0x40 << 16;
@@ -615,15 +616,7 @@ Dagaz.AI.MakeMove = function(move){
         Dagaz.AI.g_hashKeyLow ^= Dagaz.AI.g_zobristLow[to][capturedType];
         Dagaz.AI.g_hashKeyHigh ^= Dagaz.AI.g_zobristHigh[to][capturedType];
         Dagaz.AI.g_move50 = 0;
-    } else if ((piece & Dagaz.AI.TYPE_MASK) == piecePawn) {
-        var diff = to - from;
-        if (diff < 0) diff = -diff;
-        if (diff > 16) {
-            g_enPassentSquare = me ? (to + 0x10) : (to - 0x10);
-        }
-        Dagaz.AI.g_move50 = 0;
     }
-    // TODO: piecePair moves
 
     Dagaz.AI.g_hashKeyLow ^= Dagaz.AI.g_zobristLow[from][piece & Dagaz.AI.PIECE_MASK];
     Dagaz.AI.g_hashKeyHigh ^= Dagaz.AI.g_zobristHigh[from][piece & Dagaz.AI.PIECE_MASK];
@@ -638,9 +631,11 @@ Dagaz.AI.MakeMove = function(move){
     Dagaz.AI.g_pieceIndex[to] = Dagaz.AI.g_pieceIndex[from];
     Dagaz.AI.g_pieceList[((piece & Dagaz.AI.PIECE_MASK) << Dagaz.AI.COUNTER_SIZE) | Dagaz.AI.g_pieceIndex[to]] = to;
 
-    if (flags & moveflagPromotion) {
+    if (flags & (moveflagPromotion | moveflagSplit)) {
         var newPiece = piece & (~Dagaz.AI.TYPE_MASK);
-        if (flags & moveflagPromoteKnight) 
+        if (flags & moveflagSplit)
+            newPiece |= piecePawn;
+        else if (flags & moveflagPromoteKnight) 
             newPiece |= pieceKnight;
         else if (flags & moveflagPromoteQueen) 
             newPiece |= pieceQueen;
@@ -677,6 +672,20 @@ Dagaz.AI.MakeMove = function(move){
     }
     Dagaz.AI.g_board[from] = pieceEmpty;
 
+    if (flags & moveflagSplit) {
+        var newPiece = piece & (~Dagaz.AI.TYPE_MASK);
+        newPiece |= pieceQueen;
+        var promoteType = newPiece & Dagaz.AI.PIECE_MASK;
+
+        Dagaz.AI.g_hashKeyLow ^= Dagaz.AI.g_zobristLow[from][newPiece & Dagaz.AI.PIECE_MASK];
+        Dagaz.AI.g_hashKeyHigh ^= Dagaz.AI.g_zobristHigh[from][newPiece & Dagaz.AI.PIECE_MASK];
+        Dagaz.AI.g_baseEval += pieceSquareAdj[newPiece & Dagaz.AI.TYPE_MASK][me == 0 ? flipTable[from] : from];
+
+        Dagaz.AI.g_pieceIndex[from] = Dagaz.AI.g_pieceCount[promoteType];
+        Dagaz.AI.g_pieceList[(promoteType << Dagaz.AI.COUNTER_SIZE) | Dagaz.AI.g_pieceIndex[from]] = from;
+        Dagaz.AI.g_pieceCount[promoteType]++;
+    }
+
     Dagaz.AI.g_toMove = otherColor;
     Dagaz.AI.g_baseEval = -Dagaz.AI.g_baseEval;
     
@@ -698,7 +707,7 @@ Dagaz.AI.MakeMove = function(move){
     
     Dagaz.AI.g_inCheck = false;
     
-    if (flags < moveflagPromotion) {
+    if (flags < moveflagSplit) {
         var theirKingPos = Dagaz.AI.g_pieceList[(pieceKing | Dagaz.AI.g_toMove) << Dagaz.AI.COUNTER_SIZE];
         if (theirKingPos != 0) {
             // First check if the piece we moved can attack the enemy king
@@ -716,7 +725,7 @@ Dagaz.AI.MakeMove = function(move){
         }
     }
     else {
-        // promotion, slow check
+        // split or promotion, slow check
         Dagaz.AI.g_inCheck = false;
         var kingPos = Dagaz.AI.g_pieceList[(pieceKing | Dagaz.AI.g_toMove) << Dagaz.AI.COUNTER_SIZE];
         if (kingPos != 0) {
@@ -752,9 +761,32 @@ Dagaz.AI.UnmakeMove = function(move){
     
     var piece = Dagaz.AI.g_board[to];
     
-    // TODO: piecePair moves (flag?)
+    if (flags & moveflagSplit) {
+        piece = (Dagaz.AI.g_board[to] & (~Dagaz.AI.TYPE_MASK)) | pieceQueen;
+        var pawnType = piece & Dagaz.AI.PIECE_MASK;
 
-    if (flags & moveflagPromotion) {
+        Dagaz.AI.g_pieceCount[pawnType]--;
+        var lastPawnSquare = Dagaz.AI.g_pieceList[(pawnType << Dagaz.AI.COUNTER_SIZE) | Dagaz.AI.g_pieceCount[pawnType]];
+        Dagaz.AI.g_pieceIndex[lastPawnSquare] = Dagaz.AI.g_pieceIndex[from];
+        Dagaz.AI.g_pieceList[(pawnType << Dagaz.AI.COUNTER_SIZE) | Dagaz.AI.g_pieceIndex[lastPawnSquare]] = lastPawnSquare;
+        Dagaz.AI.g_pieceList[(pawnType << Dagaz.AI.COUNTER_SIZE) | Dagaz.AI.g_pieceCount[pawnType]] = 0;
+
+        piece = (Dagaz.AI.g_board[to] & (~Dagaz.AI.TYPE_MASK)) | piecePair;
+        Dagaz.AI.g_board[from] = piece;
+
+        var pawnType = Dagaz.AI.g_board[from] & Dagaz.AI.PIECE_MASK;
+        var promoteType = Dagaz.AI.g_board[to] & Dagaz.AI.PIECE_MASK;
+
+        Dagaz.AI.g_pieceCount[promoteType]--;
+        var lastPromoteSquare = Dagaz.AI.g_pieceList[(promoteType << Dagaz.AI.COUNTER_SIZE) | Dagaz.AI.g_pieceCount[promoteType]];
+        Dagaz.AI.g_pieceIndex[lastPromoteSquare] = Dagaz.AI.g_pieceIndex[to];
+        Dagaz.AI.g_pieceList[(promoteType << Dagaz.AI.COUNTER_SIZE) | Dagaz.AI.g_pieceIndex[lastPromoteSquare]] = lastPromoteSquare;
+        Dagaz.AI.g_pieceList[(promoteType << Dagaz.AI.COUNTER_SIZE) | Dagaz.AI.g_pieceCount[promoteType]] = 0;
+        Dagaz.AI.g_pieceIndex[to] = Dagaz.AI.g_pieceCount[pawnType];
+        Dagaz.AI.g_pieceList[(pawnType << Dagaz.AI.COUNTER_SIZE) | Dagaz.AI.g_pieceIndex[to]] = to;
+        Dagaz.AI.g_pieceCount[pawnType]++;
+
+    } else if (flags & moveflagPromotion) {
         piece = (Dagaz.AI.g_board[to] & (~Dagaz.AI.TYPE_MASK)) | piecePawn;
         Dagaz.AI.g_board[from] = piece;
 
@@ -762,7 +794,6 @@ Dagaz.AI.UnmakeMove = function(move){
         var promoteType = Dagaz.AI.g_board[to] & Dagaz.AI.PIECE_MASK;
 
         Dagaz.AI.g_pieceCount[promoteType]--;
-
         var lastPromoteSquare = Dagaz.AI.g_pieceList[(promoteType << Dagaz.AI.COUNTER_SIZE) | Dagaz.AI.g_pieceCount[promoteType]];
         Dagaz.AI.g_pieceIndex[lastPromoteSquare] = Dagaz.AI.g_pieceIndex[to];
         Dagaz.AI.g_pieceList[(promoteType << Dagaz.AI.COUNTER_SIZE) | Dagaz.AI.g_pieceIndex[lastPromoteSquare]] = lastPromoteSquare;
@@ -872,13 +903,19 @@ function GenerateValidMoves() {
 Dagaz.AI.GenerateAllMoves = function(moveStack) {
     var from, to, piece, pieceIdx;
 
-    // TODO: Pair quiet moves
+    // Pair quiet moves
+    pieceIdx = (Dagaz.AI.g_toMove | piecePair) << Dagaz.AI.COUNTER_SIZE;
+    from = Dagaz.AI.g_pieceList[pieceIdx++];
+    while (from != 0) {
+        GeneratePawnMoves(moveStack, from, moveflagSplit);
+        from = Dagaz.AI.g_pieceList[pieceIdx++];
+    }
 
     // Pawn quiet moves
     pieceIdx = (Dagaz.AI.g_toMove | piecePawn) << Dagaz.AI.COUNTER_SIZE;
     from = Dagaz.AI.g_pieceList[pieceIdx++];
     while (from != 0) {
-        GeneratePawnMoves(moveStack, from);
+        GeneratePawnMoves(moveStack, from, 0);
         from = Dagaz.AI.g_pieceList[pieceIdx++];
     }
 
@@ -954,7 +991,20 @@ Dagaz.AI.GenerateCaptureMoves = function(moveStack) {
     var inc = (Dagaz.AI.g_toMove == Dagaz.AI.colorWhite) ? -16 : 16;
     var enemy = Dagaz.AI.g_toMove == Dagaz.AI.colorWhite ? 0x10 : 0x8;
 
-    // TODO: Pair captures
+    // Pair captures
+    pieceIdx = (Dagaz.AI.g_toMove | piecePair) << Dagaz.AI.COUNTER_SIZE;
+    from = Dagaz.AI.g_pieceList[pieceIdx++];
+    while (from != 0) {
+        to = from + inc - 1;
+        if (Dagaz.AI.g_board[to] & enemy) {
+            MovePawnTo(moveStack, from, to, moveflagSplit);
+        }
+        to = from + inc + 1;
+        if (Dagaz.AI.g_board[to] & enemy) {
+            MovePawnTo(moveStack, from, to, moveflagSplit);
+        }
+        from = Dagaz.AI.g_pieceList[pieceIdx++];
+    }
 
     // Pawn captures
     pieceIdx = (Dagaz.AI.g_toMove | piecePawn) << Dagaz.AI.COUNTER_SIZE;
@@ -962,11 +1012,11 @@ Dagaz.AI.GenerateCaptureMoves = function(moveStack) {
     while (from != 0) {
         to = from + inc - 1;
         if (Dagaz.AI.g_board[to] & enemy) {
-            MovePawnTo(moveStack, from, to);
+            MovePawnTo(moveStack, from, to, 0);
         }
         to = from + inc + 1;
         if (Dagaz.AI.g_board[to] & enemy) {
-            MovePawnTo(moveStack, from, to);
+            MovePawnTo(moveStack, from, to, 0);
         }
         from = Dagaz.AI.g_pieceList[pieceIdx++];
     }
@@ -1038,7 +1088,7 @@ Dagaz.AI.GenerateCaptureMoves = function(moveStack) {
     }
 }
 
-function MovePawnTo(moveStack, start, square) {
+function MovePawnTo(moveStack, start, square, flags) {
     var row = square & 0xF0;
     if (((row == 0x90) || (row == 0x20))) {
         if (Dagaz.AI.g_flags & moveflagPromoteQueen) {
@@ -1053,18 +1103,18 @@ function MovePawnTo(moveStack, start, square) {
         moveStack[moveStack.length] = GenerateMove(start, square, moveflagPromotion);
     }
     else {
-        moveStack[moveStack.length] = GenerateMove(start, square, 0);
+        moveStack[moveStack.length] = GenerateMove(start, square, flags);
     }
 }
 
-function GeneratePawnMoves(moveStack, from) {
+function GeneratePawnMoves(moveStack, from, flags) {
     var piece = Dagaz.AI.g_board[from];
     var color = piece & Dagaz.AI.colorWhite;
     var inc = (color == Dagaz.AI.colorWhite) ? -16 : 16;
     // Quiet pawn moves
     var to = from + inc;
     if (Dagaz.AI.g_board[to] == 0) {
-	MovePawnTo(moveStack, from, to, pieceEmpty);
+	MovePawnTo(moveStack, from, to, flags);
     }
 }
 
@@ -1089,13 +1139,17 @@ Dagaz.AI.See = function(move) {
     var us = (fromPiece & Dagaz.AI.colorWhite) ? Dagaz.AI.colorWhite : 0;
     var them = Dagaz.AI.colorWhite - us;
 
-    // TODO: Pair attacks 
-
     // Pawn attacks 
     // If any opponent pawns can capture back, this capture is probably not worthwhile (as we must be using knight or above).
     var inc = (fromPiece & Dagaz.AI.colorWhite) ? -16 : 16; // Note: this is capture direction from to, so reversed from normal move direction
     if (((Dagaz.AI.g_board[to + inc + 1] & Dagaz.AI.PIECE_MASK) == (piecePawn | them)) ||
         ((Dagaz.AI.g_board[to + inc - 1] & Dagaz.AI.PIECE_MASK) == (piecePawn | them))) {
+        return false;
+    }
+
+    // Pair attacks 
+    if (((Dagaz.AI.g_board[to + inc + 1] & Dagaz.AI.PIECE_MASK) == (piecePair | them)) ||
+        ((Dagaz.AI.g_board[to + inc - 1] & Dagaz.AI.PIECE_MASK) == (piecePair | them))) {
         return false;
     }
 
@@ -1121,14 +1175,19 @@ Dagaz.AI.See = function(move) {
         }
     }
 
-    // TODO: Pair defenses
-
     // Pawn defenses 
     // At this point, we are sure we are making a "losing" capture.  The opponent can not capture back with a 
     // pawn.  They cannot capture back with a minor/major and stand pat either.  So, if we can capture with 
     // a pawn, it's got to be a winning or equal capture. 
     if (((Dagaz.AI.g_board[to - inc + 1] & Dagaz.AI.PIECE_MASK) == (piecePawn | us)) ||
         ((Dagaz.AI.g_board[to - inc - 1] & Dagaz.AI.PIECE_MASK) == (piecePawn | us))) {
+        Dagaz.AI.g_board[from] = fromPiece;
+        return true;
+    }
+
+    // Pair defenses
+    if (((Dagaz.AI.g_board[to - inc + 1] & Dagaz.AI.PIECE_MASK) == (piecePair | us)) ||
+        ((Dagaz.AI.g_board[to - inc - 1] & Dagaz.AI.PIECE_MASK) == (piecePair | us))) {
         Dagaz.AI.g_board[from] = fromPiece;
         return true;
     }
