@@ -24,6 +24,10 @@
 <img id="Ko" style="display:none" src="images/spark.png">
 
 <table style="margin:auto; font-family:sans-serif; font-size:14px" id="Table">
+<tr><td><a href="javascript:Dagaz.Controller.undo()" style="display:none" id="undo"><img src="../../images/undo.png"/></a>
+<a href="javascript:Dagaz.Controller.newGame()">New Game</a>
+<a href="javascript:Dagaz.Controller.sound()" id="sound">no Sound</a>
+<a href="javascript:Dagaz.Controller.redo()" style="display:none" id="redo"><img src="../../images/redo.png"/></a></td></tr>
 <tr style="height:548px; vertical-align:top">
 <td id="CanvasCell" style="width:548px">
 <canvas id="Canvas" width="548" height="548" style="cursor:default">Broken canvas...</canvas>
@@ -47,17 +51,23 @@
 </tr>
 </table>
 
-<script src="http://underscorejs.ru/underscore-min.js"></script>
+<script src="../../../underscore/underscore-min.js"></script>
+<script src="../../../underscore/seedrandom.min.js"></script>
 <script src="../../kernel/dagaz.js"></script>
 <script src="../../kernel/model/zrf-model.js"></script>
-<script src="../../kernel/model/zobrist.js"></script>
-<script src="../../kernel/model/common-setup-v2.js"></script>
+<script src="../../kernel/model/zobrist-v2.js"></script>
 <script src="../../kernel/view/2d/2d-view-v3.js"></script>
 <script src="../../kernel/controller/utils/move-list-v3.js"></script>
+<script src="../../kernel/controller/utils/session-manager.js"></script>
+<script src="../../kernel/controller/utils/sound-manager-v2.js"></script>
+<script src="../../kernel/controller/ai/random-ai.js"></script>
+<script src="../../kernel/controller/ai/garbo-ai-v2.js"></script>
 <script src="chess-goal.js"></script>
 <script src="chess-promotion.js"></script>
 <script src="chess-invariant.js"></script>
 <script src="spark-view.js"></script>
+<script src="short-assize-ai.js"></script>
+<script src="short-assize-setup.js"></script>
 <script src="short-assize-extension.js"></script>
 <script src="short-assize-restriction.js"></script>
 <script src="short-assize.js"></script>

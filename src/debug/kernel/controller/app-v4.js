@@ -393,6 +393,24 @@ App.prototype.isRandom = function() {
   return false;
 }
 
+Dagaz.AI.callback = function(result) {
+  var app = Dagaz.Controller.app;
+  console.log('Advisor: ' + result);
+  var move = null;
+  _.each(app.board.moves, function(m) {
+      var x = m.toString() + ' ';
+      if (x.startsWith(result + ' ')) {
+          move = m;
+      }
+  });
+  if (move === null) return;
+  var board = app.board.apply(move);
+  Dagaz.Controller.pushState(move, board);
+  if (!_.isUndefined(Dagaz.Sounds) && !_.isUndefined(Dagaz.Sounds.hint)) {
+      Dagaz.Controller.play(Dagaz.Sounds.hint);
+  }
+}
+
 App.prototype.exec = function() {
   this.view.configure();
   if (!_.isUndefined(Dagaz.Model.load) && (Dagaz.Controller.persistense == "session")) {
@@ -454,14 +472,14 @@ App.prototype.exec = function() {
                  if (ctx !== null) {
                      ai.setContext(ctx, this.board);
                      var result = ai.getMove(ctx);
-                     if (result && result.done) {
-                         delete Dagaz.AI.advisorStamp;
+                     if (result && result.done && result.move) {
                          var board = this.board.apply(result.move);
                          Dagaz.Controller.pushState(result.move, board);
                          if (!_.isUndefined(Dagaz.Sounds.hint)) {
                              Dagaz.Controller.play(Dagaz.Sounds.hint);
                          }
                      }
+                     delete Dagaz.AI.advisorStamp;
                  }
              }
          }
@@ -548,12 +566,14 @@ App.prototype.exec = function() {
       }
       if (result) {
           if (_.isUndefined(result.move)) {
-              this.state = STATE.DONE;
-              Canvas.style.cursor = "default";
-              if (!_.isUndefined(Dagaz.Controller.play)) {
-                  Dagaz.Controller.play(Dagaz.Sounds.win);
+              if (result.done) {
+                  this.state = STATE.DONE;
+                  Canvas.style.cursor = "default";
+                  if (!_.isUndefined(Dagaz.Controller.play)) {
+                      Dagaz.Controller.play(Dagaz.Sounds.win);
+                  }
+                  this.gameOver(player + " lose", -this.board.player);
               }
-              this.gameOver(player + " lose", -this.board.player);
               return;
           }
           if (result.done || (Date.now() - this.timestamp >= this.params.AI_WAIT)) {
