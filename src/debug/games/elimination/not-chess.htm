@@ -12,6 +12,10 @@
 <img id="BlackKnight" style="display:none" src="images/notchess/bknight.png">
 
 <table style="margin:auto; font-family:sans-serif; font-size:14px" id="Table">
+<tr><td><a href="javascript:Dagaz.Controller.undo()" style="display:none" id="undo"><img src="../../images/undo.png"/></a>
+<a href="javascript:Dagaz.Controller.newGame()">New Game</a>
+<a href="javascript:Dagaz.Controller.sound()" id="sound">no Sound</a>
+<a href="javascript:Dagaz.Controller.redo()" style="display:none" id="redo"><img src="../../images/redo.png"/></a></td></tr>
 <tr style="height:644px; vertical-align:top">
 <td id="CanvasCell" style="width:644px">
 <canvas id="Canvas" width="644" height="644" style="cursor:default">Broken canvas...</canvas>
@@ -35,15 +39,19 @@
 </tr>
 </table>
 
-<script src="http://underscorejs.ru/underscore-min.js"></script>
+<script src="../../../underscore/underscore-min.js"></script>
 <script src="../../kernel/dagaz.js"></script>
 <script src="../../kernel/model/zrf-model.js"></script>
-<script src="../../kernel/model/zobrist.js"></script>
-<script src="../../kernel/view/2d/2d-view.js"></script>
-<script src="../../kernel/controller/utils/move-list.js"></script>
+<script src="../../kernel/model/zobrist-v2.js"></script>
+<script src="../../kernel/view/2d/2d-view-v2.js"></script>
+<script src="../../kernel/controller/utils/move-list-v2.js"></script>
+<script src="../../kernel/controller/utils/session-manager.js"></script>
+<script src="../../kernel/controller/utils/sound-manager-v2.js"></script>
+<script src="../../kernel/controller/ai/random-ai.js"></script>
 <script src="../../kernel/controller/ai/maxmin-ai-v2.js"></script>
+<script src="not-chess-setup.js"></script>
 <script src="not-chess.js"></script>
-<script src="../../kernel/controller/app.js"></script>
+<script src="../../kernel/controller/app-v2.js"></script>
 
 </body>
 </html>

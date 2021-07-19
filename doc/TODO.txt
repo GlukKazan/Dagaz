@@ -1,5 +1,16 @@
 ﻿- garbo-ai-v2
-  - Матование
+  - Short Assize
+    - ?turn=8&reserve=0,0,0,0,0,0,0,;0,0,0,0,0,0,0,;&setup=1rb1kbr1/3nn3/ppppxppp/8/5P2/PPPPX1PP/2N1KN2/2RBBR2
+      - Ошибка IsSquareAttackableFrom (short-assize-ai.js:853)
+      - Ломается g_pieceList (выдает undefined в kingPos в MakeMove)
+        - Обработка moveflagSplit в MakeMove
+      - Повысить стоимость пары (для защиты от боя)
+    - Перевести Dark Short Assize на garbo-ai-v2
+  - Sittuyin
+    - ?turn=9&reserve=0,0,0,0,0,;0,0,0,0,0,;&setup=4r1r1/2knnb2/3qpppp/pp1b4/3P1PPP/PP2QKB1/2NB1N2/2R3R1
+      - Выдаёт некорректный ход e4-f3
+      - Превращение на месте не поддерживается
+  - Матование в Chess
     - Улучшать оценку
       - Если часть полей вблизи вражеского короля под шахом
       - Есть другие фигуры
@@ -16,16 +27,6 @@
       - ?turn=0;&setup=1nq1kbr1/r1pppppN/pp6/3bP3/2QPBB2/P1N5/1P3PPP/R3K2R
       - Не воспроизводится на релизной сборке (f6-d6)
       - Неверно заполнялись g_vectorDelta
-  - Short Assize
-    - ?turn=8&reserve=0,0,0,0,0,0,0,;0,0,0,0,0,0,0,;&setup=1rb1kbr1/3nn3/ppppxppp/8/5P2/PPPPX1PP/2N1KN2/2RBBR2
-      - Ошибка IsSquareAttackableFrom (short-assize-ai.js:853)
-    - dark
-  - Sittuyin
-    - ?turn=9&reserve=0,0,0,0,0,;0,0,0,0,0,;&setup=4r1r1/2knnb2/3qpppp/pp1b4/3P1PPP/PP2QKB1/2NB1N2/2R3R1
-      - Выдаёт некорректный ход e4-f3
-    - DagazServer
-      - Даёт расставлять фигуры и белым и чёрным одновременно
-    - dark
   - Mini XiangQi
     - Дворец
     - Пушки
